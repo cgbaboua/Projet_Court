@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram, linkage
 
-# Read all the sequences from a FASTA file and store them in a dictionary
 def read_sequences(fasta_file) :
     """
     Read all the sequences from a FASTA file and store them in a dictionary.
@@ -115,11 +114,10 @@ def needleman_wunsch(seq1,seq2,matrix,gap_penalty=-5,return_score=True):
             alignment2 = seq2[j-1] + alignment2
             j -= 1
     # Return the score or the alignment
-    if return_score == False :
-        return alignment1, alignment2
-    else :
+    if return_score:
         return score_matrix[length_seq1][length_seq2]
-
+    else:
+        return f"{alignment1}\n{alignment2}"
 
 def pairwise_alignment_scores(seq1_id,seq2_id,score,dict_alignment_scores) :
     """
@@ -183,7 +181,7 @@ def upgma(distance_matrix, list_keys_sequences_dict, display_dendrogram=False):
     # Initialize cluster dictionary with sequence IDs
     clusters = {i: [list_keys_sequences_dict[i]] for i in range(n)}
     # Initialize the tree structure representation
-    tree_structure = {i: list_keys_sequences_dict[i] for i in range(n)}
+    tree_structure = {i: (list_keys_sequences_dict[i],) for i in range(n)}
     # List to store the linkage matrix, which is needed for dendrogram
     Z = []
     # Main loop: Continue until there's more than one cluster
@@ -222,7 +220,12 @@ def upgma(distance_matrix, list_keys_sequences_dict, display_dendrogram=False):
         # Append the new merging information to Z
         Z.append([x, y, min_distance, len(new_cluster)])
         # Update the textual/tuple tree representation
-        tree_structure[new_idx] = '(%s,%s)' % (tree_structure[x], tree_structure[y])
+        # Update the textual/tuple tree representation
+        if type(tree_structure[x]) == tuple and len(tree_structure[x]) == 1:
+            tree_structure[x] = tree_structure[x][0]
+        if type(tree_structure[y]) == tuple and len(tree_structure[y]) == 1:
+            tree_structure[y] = tree_structure[y][0]
+        tree_structure[new_idx] = (tree_structure[x], tree_structure[y])
         del tree_structure[x], tree_structure[y]
     # Display the dendrogram if required
     if display_dendrogram:
@@ -240,8 +243,60 @@ def upgma(distance_matrix, list_keys_sequences_dict, display_dendrogram=False):
         plt.show()
     return tree_structure[new_idx]
 
+def tuple_to_list(t):
+    """
+    Converts a nested tuple into a nested list.
+    
+    Parameters:
+        t : tuple or value to convert
+        
+    Returns:
+        A nested list representing the structure of the original tuple.
+    """
+    # Check if the given argument is a tuple
+    if type(t) == tuple:
+        # Initialize a new empty list to store the converted elements
+        tree_structure_list = []
+        for item in t:
+             # If the element is also a tuple, perform recursive conversion
+            if type(item) == tuple:
+                tree_structure_list.append(tuple_to_list(item))
+            # If the element is not a tuple, directly append it to the list
+            else:
+                tree_structure_list.append(item)
+        return tree_structure_list
+    return t 
+
+def extract_nodes(tree_structure_list):
+    """
+    Extracts the order of nodes (or sequences) in a given hierarchical list structure.
+    This function is particularly useful in the context of multiple sequence alignment.
+
+    Parameters:
+    - tree_structure_list: A nested list representing the hierarchical structure of nodes.
+
+    Returns:
+    - Modifies the global variable final_order to reflect the required node ordering.
+    """
+    # Extract the last element in the current nested list
+    last_element = tree_structure_list[-1]
+    # If the last element itself is a nested list
+    if isinstance(last_element, list):
+        # Process this nested list first
+        extract_nodes(last_element)
+        # Now, append the other elements in the current list (except the last one)
+        for item in reversed(tree_structure_list[:-1]):
+            final_order_list.append([item])
+    else:
+        # If the last element is a leaf node (single value), consider it as a group of linked nodes
+        # Append this group to the final list
+        final_order_list.append(tree_structure_list)
+
+
+
 # Main program
 sequences = read_sequences('SeqFastaCoreG.fasta')
+sequences = read_sequences('mel_seq.fasta')
 blosum62 = matrix('blosum62.txt')
 keys_list = list(sequences.keys())
 alignment_scores = {}
@@ -250,8 +305,19 @@ for i in range(len(keys_list)) :
         score = needleman_wunsch(sequences[keys_list[i]],sequences[keys_list[j]],blosum62,-5,True)
         alignment_scores = pairwise_alignment_scores(keys_list[i],keys_list[j],score,alignment_scores)
         print(f"In progress {i}/{len(sequences)}", end="\r")
+        #TODO enlever ceci ou trouver une alternative
 
 
 distance_matrix = convert_score_to_distance(alignment_scores,keys_list)
-tree_structure = upgma(distance_matrix, keys_list,display_dendrogram=True)
+tree_structure = upgma(distance_matrix, keys_list)
+tree_list = tuple_to_list(tree_structure)
+final_order_list=[]
+extract_nodes(tree_list)
+
+
+
+for i in final_order_list :
+    if len(i) ==2 :
+        print(needleman_wunsch(sequences[i[0]],sequences[i[1]],blosum62,-5,False))
+
 
