@@ -109,6 +109,7 @@ To test the program, use the example [HGlobin.fasta](https://github.com/cgbaboua
 `python3 clustal.py --seq_file Examples/HGlobin.fasta --blosum_file blosum62.txt --display_dendrogram`
 
 *Note: Example FASTA sequences are sourced from Uniprot and NCBI. The program can handle FASTA formats from both Uniprot and NCBI.*
+
 *Note : In the [Examples/](https://github.com/cgbaboua/Projet_Court/tree/main/Examples) repository, you'll find example fasta files and the results obtained with these files.*
 ### Outputs 
 
