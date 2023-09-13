@@ -1,4 +1,4 @@
-# UE : BQ4CY010 Programmation 3 - Projet court | CLUSTAL
+# BQ4CY010 Programmation 3 - Projet court | CLUSTAL
 **Author** : GBABOUA Cassandra
 
 ## Summary 
