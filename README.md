@@ -97,7 +97,7 @@ The --display_dendrogram argument is optional, and will generate a dendrogram if
 - `sys`: Provides access to some variables used or maintained by the interpreter and to functions that interact strongly with the interpreter.
 - `numpy (aliased as np)`: Utilized for numerical operations, especially for handling arrays and matrices.
 - `matplotlib.pyplot (aliased as plt)`: Used for plotting and generating any graphs, like dendrograms.
-- `scipy.cluster.hierarchy`: Provides functions for hierarchical clustering, including dendrogram, linkage, and leaves_list, which are used to create and display dendrograms.
+- `scipy.cluster.hierarchy`: Provides functions for hierarchical clustering, including `dendrogram`, `linkage`, and `leaves_list`, which are used to create and display dendrograms.
 - `argparse`: Command-line parsing library to identify what arguments need to be passed to the script, making it more user-friendly.
 
 ## Outputs and Examples
